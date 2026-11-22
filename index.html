@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MD Kundalik</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F2F5F9" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#10151D" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MD Kundalik">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#F2F5F9;--card:#fff;--ink:#16202E;--mut:#6B7686;--ac:#2F4BDB;--acx:#fff;--in:#12805C;--out:#C23B3B;--ln:#DDE3EC;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151D;--card:#19212C;--ink:#E8EDF4;--mut:#93A0B2;--ac:#7B93FF;--acx:#10151D;--in:#4CC9A0;--out:#FF7B7B;--ln:#2A3442;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151D;--card:#19212C;--ink:#E8EDF4;--mut:#93A0B2;--ac:#7B93FF;--acx:#10151D;--in:#4CC9A0;--out:#FF7B7B;--ln:#2A3442;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Onest,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:84px}
+main{max-width:560px;margin:0 auto;padding:16px}
+h2{font-size:26px;margin:8px 0 14px;letter-spacing:-.02em}
+h3{font-size:16px;margin:22px 0 8px;color:var(--mut);font-weight:500}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+textarea{min-height:160px;resize:vertical}
+input[type=checkbox]{width:22px;height:22px;margin:0;flex:none}
+.btn{font:inherit;font-weight:700;background:var(--ac);color:var(--acx);border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+.btn.g{background:transparent;color:var(--ac);border:1px solid var(--ln)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.moods,.seg,.nav,.add,.two{display:flex;gap:8px;margin-bottom:8px}
+.add input,.two>*{margin:0;flex:1}
+.mood{font-size:24px;background:var(--bg);border:1px solid var(--ln);border-radius:10px;flex:1;padding:6px;cursor:pointer}
+.mood.on,.seg .on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 16%,transparent)}
+.seg button{flex:1;font:inherit;padding:9px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);cursor:pointer}
+.nav{align-items:center;justify-content:space-between}
+.nav button{font-size:20px;width:44px;height:40px;border:1px solid var(--ln);background:var(--card);color:var(--ink);border-radius:10px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+.day{font:inherit;font-size:12px;color:var(--mut);background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.day b{font-size:17px;color:var(--ink)}
+.day i{font-style:normal;font-size:11px;min-height:14px;color:var(--ac)}
+.day.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 16%,transparent)}
+.day.td b{text-decoration:underline}
+.task,.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}
+.task span,.row .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.dn{text-decoration:line-through;color:var(--mut)}
+.x{border:0;background:transparent;color:var(--mut);font-size:16px;padding:6px 8px;cursor:pointer}
+.mut{color:var(--mut);font-size:14px;margin:6px 0}
+.bal{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0}
+.in{color:var(--in)}.out{color:var(--out)}
+.bar{height:10px;background:var(--bg);border-radius:6px;overflow:hidden;margin:8px 0}
+.bar div{height:100%;background:var(--ac)}
+.ent{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;font:inherit;font-size:12px;color:var(--mut);background:transparent;border:0;padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:22px}
+nav button.on{color:var(--ac);font-weight:700}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.s{opacity:1}
+body{padding-bottom:104px;background:radial-gradient(circle at 12% -5%,color-mix(in srgb,var(--ac) 26%,transparent),transparent 42%),radial-gradient(circle at 105% 35%,color-mix(in srgb,var(--in) 20%,transparent),transparent 40%),var(--bg);background-attachment:fixed}
+.card{background:color-mix(in srgb,var(--card) 68%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid color-mix(in srgb,#fff 35%,var(--ln));box-shadow:0 8px 24px rgba(20,30,60,.08),inset 0 1px 0 rgba(255,255,255,.5)}
+nav{background:color-mix(in srgb,var(--card) 62%,transparent);backdrop-filter:blur(22px) saturate(1.6);-webkit-backdrop-filter:blur(22px) saturate(1.6);border-top:1px solid color-mix(in srgb,#fff 40%,var(--ln))}
+.ic{position:relative;width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:21px;text-shadow:0 2px 3px rgba(0,0,0,.3);background:linear-gradient(145deg,var(--c1),var(--c2));box-shadow:inset 0 1.5px 1px rgba(255,255,255,.75),inset 0 -4px 7px rgba(0,0,0,.22),0 6px 12px color-mix(in srgb,var(--c2) 55%,transparent);transition:transform .15s}
+.ic::after{content:"";position:absolute;left:3px;right:3px;top:2px;height:45%;border-radius:12px 12px 20px 20px;background:linear-gradient(rgba(255,255,255,.65),rgba(255,255,255,.05))}
+nav button.on .ic{transform:translateY(-4px) scale(1.08)}
+.mood,.ck.ok,.ck.no{box-shadow:inset 0 1px 1px rgba(255,255,255,.6),inset 0 -2px 4px rgba(0,0,0,.15),0 3px 8px rgba(0,0,0,.15)}
+.top{max-width:560px;margin:0 auto;padding:12px 16px 0;display:flex;align-items:center;gap:10px}
+.top small{display:block;color:var(--mut);font-size:12px;line-height:1.2}
+.md{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;flex:none;border-radius:12px;font-weight:800;font-size:15px;letter-spacing:.5px;color:#fff;background:linear-gradient(145deg,#6EA8FF,#2F4BDB 60%,#1B2E9E);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.7),inset 0 -4px 6px rgba(0,0,0,.25),0 6px 12px rgba(47,75,219,.4);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.md.big{width:56px;height:56px;font-size:21px;border-radius:18px}
+#ring{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}#ring[hidden]{display:none}
+#ring .card{width:100%;max-width:360px}#ring .btn{width:100%;margin-top:10px}
+.pg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.pb{font:inherit;font-size:14px;padding:8px 0;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--ink);cursor:pointer}
+.pb.r{background:var(--in);border-color:var(--in);color:var(--acx)}.pb.h{background:var(--ac);border-color:var(--ac);color:var(--acx)}.pb.p{border:2px dashed var(--ac)}
+.prow{display:flex;align-items:center;gap:12px;width:100%;font:inherit;color:var(--ink);background:transparent;border:0;border-top:1px solid var(--ln);padding:10px 0;text-align:left;cursor:pointer}
+.prow i{font-style:normal;font-size:13px;color:var(--mut)}
+.prow span.f{flex:1;overflow-wrap:anywhere}
+.ck{width:28px;height:28px;flex:none;border-radius:50%;border:2px solid var(--ln);display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:transparent;color:var(--acx);padding:0;cursor:pointer}
+.ck.ok{background:var(--in);border-color:var(--in)}.ck.no{background:var(--out);border-color:var(--out)}
+.dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--ln);margin:4px 0}
+.dot.f{background:var(--in);border-color:var(--in)}.dot.p{border-color:var(--in);background:linear-gradient(90deg,var(--in) 50%,transparent 50%)}
+.bars{display:flex;gap:8px;margin-top:8px}.bars>div{flex:1;text-align:center;font-size:12px;color:var(--mut)}
+.bc{height:90px;background:var(--bg);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;margin-bottom:4px}.bc div{width:100%;background:var(--ac)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}
+.ch{font-size:12px;color:var(--mut);text-align:center}
+.cd{font:inherit;font-size:12px;color:var(--ink);background:var(--bg);border:1px solid transparent;border-radius:12px;padding:4px 0;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.cd span{font-size:20px;line-height:1.3;color:var(--mut)}
+.cd.on{border-color:var(--ac)}.cd.td{font-weight:700;color:var(--ac)}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--ln);border-radius:20px;padding:4px 10px;margin:0 6px 6px 0;font-size:14px}
+#login{position:fixed;inset:0;z-index:98;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}#login[hidden]{display:none}#login .card{width:100%;max-width:380px;text-align:center}#login .btn{width:100%;margin-top:8px}
+</style>
+</head>
+<body>
+<header class="top"><span class="md">MD</span><span><b>MD Kundalik</b><small>shaxsiy kundalik daftar</small></span></header>
+<main id="main"></main>
+<div id="ring" hidden><div class="card"><div style="font-size:52px">⏰</div><h2 id="rt"></h2><button class="btn" onclick="stopRing(0)">To’xtatish</button><button class="btn g" onclick="stopRing(1)">5 daqiqadan keyin</button></div></div>
+<div id="login" hidden><div class="card"><span class="md big" style="margin-bottom:8px">MD</span><h2 style="margin:4px 0">MD Kundalik</h2><p class="mut">Hisob ma’lumotlaringizni bulutda saqlaydi va boshqa telefonda qaytaradi.</p><input id="le" type="email" placeholder="Email" autocomplete="username"><input id="lp" type="password" placeholder="Parol (kamida 6 belgi)" autocomplete="current-password"><p id="lm" class="out" style="min-height:1.2em"></p><button class="btn" onclick="doAuth(0)">Kirish</button><button class="btn g" onclick="doAuth(1)">Ro’yxatdan o’tish</button><button class="x" onclick="resetPw()">Parolni unutdim</button><br><button class="x" onclick="skipLogin()">Hozircha kirmasdan davom etish</button></div></div>
+<div id="toast"></div>
+<nav id="nav"></nav>
+<script>
+const $=s=>document.querySelector(s);
+let S={diary:{},tasks:{},tx:[],goals:[],debts:[],pr:{},qr:{},qh:{},qz:{},qzl:{},dg:[],dgd:{},al:[],sh:[],bk:[],nb:[]};
+try{const r=localStorage.getItem('kd1');if(r)S=Object.assign(S,JSON.parse(r))}catch(x){}
+const save=()=>{try{localStorage.setItem('kd1',JSON.stringify(S))}catch(x){}if(DB)push()};
+const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=ymd(new Date());
+const money=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' so’m';
+const num=v=>parseFloat(String(v).replace(/\s/g,'').replace(',','.'))||0;
+const MON=['yan','fev','mar','apr','may','iyun','iyul','avg','sen','okt','noy','dek'];
+const DS=['Du','Se','Chor','Pay','Ju','Sha','Yak'];
+const PR=['Tahajjud','Bomdod','Peshin','Asr','Shom','Xufton'];
+const MN=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+const score=k=>{const t=S.tasks[k]||[],p=S.pr[k]||{};return (PR.filter(x=>p[x]).length+t.filter(x=>x.d).length)/(6+t.length)};
+const CAT={out:['Oziq-ovqat','Transport','Uy-joy','Kiyim','Sog’liq','Ko’ngilochar','Boshqa'],in:['Maosh','Biznes','Sovg’a','Boshqa']};
+const mondayOf=s=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return d};
+let tab='home',dm='d',wm='w',qb='q',bo=0,qm='r',qj=0,qe=0,hm=today.slice(0,7),ddate=today,cm=today.slice(0,7),q='',tq='',wstart=mondayOf(today),wsel=today,txType='out',gmode='goal';
+const CO={home:['#6EA8FF','#2F4BDB'],diary:['#FFB86B','#E8621F'],wal:['#5EE0B0','#12805C'],quran:['#9BE37A','#2E9E4F'],stat:['#C79BFF','#7A3FE0'],acc:['#A9BBCF','#51667E']};
+const TABS=[['home','🏠','Bugun'],['diary','📖','Kundalik'],['plan','🗓️','Reja'],['wal','👛','Hamyon'],['goal','🎯','Maqsad']];
+TABS.splice(4,1);TABS.splice(2,1);TABS.push(['quran','📗','Qur’on']);TABS.push(['stat','📊','Stats']);TABS.push(['acc','👤','Hisob']);
+function toast(m){const t=$('#toast');t.textContent=m;t.className='s';setTimeout(()=>t.className='',1400)}
+function go(){
+ $('#nav').innerHTML=TABS.map(t=>`<button class="${tab==t[0]?'on':''}" onclick="tab='${t[0]}';go();scrollTo(0,0)"><span class="ic" style="--c1:${CO[t[0]][0]};--c2:${CO[t[0]][1]}">${t[1]}</span>${t[2]}</button>`).join('');
+ $('#main').innerHTML={home:vHome,diary:()=>dseg()+(dm=='p'?vPlan():dm=='a'?vAlarm():vDiary()),wal:()=>wseg()+(wm=='g'?vGoal():wm=='s'?vShop():vWal()),stat:vStats,quran:()=>qseg()+(qb=='b'?vBooks():vQuran()),acc:vAcc}[tab]();
+}
+const dseg=()=>`<div class="seg"><button class="${dm=='d'?'on':''}" onclick="dm='d';go()">Kundalik</button><button class="${dm=='p'?'on':''}" onclick="dm='p';go()">Haftalik reja</button><button class="${dm=='a'?'on':''}" onclick="dm='a';go()">Budilnik</button></div>`;
+const wseg=()=>`<div class="seg"><button class="${wm=='w'?'on':''}" onclick="wm='w';go()">Hamyon</button><button class="${wm=='g'?'on':''}" onclick="wm='g';go()">Maqsad va qarz</button><button class="${wm=='s'?'on':''}" onclick="wm='s';go()">Bozorlik</button></div>`;
+/* Bugun */
+const sh=n=>{const d=new Date(wsel+'T00:00:00');d.setDate(d.getDate()+n);return ymd(d)};
+function sd(k){wsel=k;wstart=mondayOf(k);hm=k.slice(0,7);go()}
+function hmv(n){const [y,m]=hm.split('-').map(Number),d=new Date(y,m-1+n,1);hm=d.getFullYear()+'-'+pad(d.getMonth()+1);go()}
+function tPr(p){const o=S.pr[wsel]=S.pr[wsel]||{};o[p]=o[p]?0:1;save();go()}
+function vHome(){
+ const k=wsel,d=new Date(k+'T00:00:00'),WD=['Yakshanba','Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba'];
+ const pr=S.pr[k]||{},tl=S.tasks[k]||[],past=k<today,pd=PR.filter(p=>pr[p]).length,td=tl.filter(t=>t.d).length;
+ const dy=S.diary[k]||{},tx=S.tx.filter(x=>x.d==k),sm=t=>tx.filter(x=>x.t==t).reduce((a,x)=>a+x.a,0);
+ return `<div class="nav"><button onclick="sd(sh(-1))" aria-label="Oldingi kun">‹</button><div style="text-align:center"><h2 style="margin:0">${WD[d.getDay()]}</h2><div class="mut" style="margin:0">${d.getDate()}-${MON[d.getMonth()]}${k==today?' · bugun':''}</div></div><button onclick="sd(sh(1))" aria-label="Keyingi kun">›</button></div>
+ ${k!=today?`<button class="btn g" style="width:100%;margin-bottom:12px" onclick="sd(today)">Bugunga qaytish</button>`:''}
+ <div class="card"><b>Namozlar</b> <span class="mut">${pd}/6</span>${PR.map(p=>{const o=pr[p];return `<button class="prow" onclick="tPr('${p}')"><span class="ck ${o?'ok':past?'no':''}">${o?'✓':past?'✕':''}</span><span class="f">${p}</span><i>${o?'o’qildi':past?'o’qilmadi':''}</i></button>`}).join('')}</div>
+ ${dgCard(k,past)}${qzCard()}<div class="card"><b>Kundalik ishlar</b> <span class="mut">${td}/${tl.length}</span><div class="add" style="margin:8px 0"><input id="nt" placeholder="Yangi ish" onkeydown="if(event.key=='Enter')addT()"><button class="btn" onclick="addT()">Qo’shish</button></div>${tl.map((t,i)=>`<div class="prow"><button class="ck ${t.d?'ok':past?'no':''}" onclick="tg(${i})" aria-label="Belgilash">${t.d?'✓':past?'✕':''}</button><span class="f ${t.d?'dn':''}">${e(t.x)}</span><i>${t.d?'bajarildi':past?'bajarilmadi':''}</i><button class="x" onclick="rmT(${i})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Bu kunga ish rejalanmagan.</p>'}${tl.some(t=>!t.d)?`<button class="btn g" onclick="mvT()">Bajarilmaganlarni ertaga ko’chirish</button>`:''}</div>
+ <div class="card"><b>Kundalik yozuvi</b> ${dy.m||''}<p class="mut">${dy.t?e(dy.t.slice(0,120)):'Bu kunga yozuv yo’q.'}</p><button class="btn g" onclick="ddate='${k}';cm='${k.slice(0,7)}';dm='d';tab='diary';go();scrollTo(0,0)">Kundalikni ochish</button></div>
+ ${tx.length?`<div class="card"><b>Hamyon</b><p class="mut">Daromad: <b class="in">+${money(sm('in'))}</b> · Xarajat: <b class="out">−${money(sm('out'))}</b> (${tx.length} ta yozuv)</p></div>`:''}
+ ${dcal()}`}
+function dcal(){
+ const [y,mo]=hm.split('-').map(Number),n=new Date(y,mo,0).getDate(),off=(new Date(y,mo-1,1).getDay()+6)%7;
+ let c=DS.map(d=>`<div class="ch">${d}</div>`).join('')+'<i></i>'.repeat(off);
+ for(let i=1;i<=n;i++){const k=hm+'-'+pad(i),s=score(k);c+=`<button class="cd${k==wsel?' on':''}${k==today?' td':''}" onclick="sd('${k}');scrollTo(0,0)"><span class="dot ${s>=1?'f':s>0?'p':''}"></span>${i}</button>`}
+ return `<div class="card"><div class="nav"><button onclick="hmv(-1)" aria-label="Oldingi oy">‹</button><b>${MN[mo-1]} ${y}</b><button onclick="hmv(1)" aria-label="Keyingi oy">›</button></div><div class="cal">${c}</div><div class="mut">To’liq to’ldirilgan kun — to’la nuqta, qisman — yarim nuqta. Kunni bossangiz, tepada o’sha kun ochiladi.</div></div>`}
+/* Maqsad, qazo, Qur’on */
+const QZ=['Bomdod','Peshin','Asr','Shom','Xufton','Vitr'],qg=p=>S.qz[p]||{t:0,d:0};
+const js=n=>n==1?1:20*n-18,je=n=>n==30?604:js(n+1)-1;
+function addDg(){const v=$('#dgn').value.trim();if(!v)return;S.dg.push({id:Date.now(),x:v});save();go()}
+function tDg(id){const o=S.dgd[wsel]=S.dgd[wsel]||{};o[id]=o[id]?0:1;save();go()}
+function rmDg(id){S.dg=S.dg.filter(x=>x.id!=id);save();go()}
+function dgCard(k,past){const g=S.dgd[k]||{},dn=S.dg.filter(x=>g[x.id]).length;
+ return `<div class="card"><b>Kunlik maqsadlar</b> <span class="mut">${dn}/${S.dg.length}</span>${S.dg.map(x=>{const o=g[x.id];return `<div class="prow"><button class="ck ${o?'ok':past?'no':''}" onclick="tDg(${x.id})" aria-label="Belgilash">${o?'✓':past?'✕':''}</button><span class="f ${o?'dn':''}">${e(x.x)}</span><i>${o?'bajarildi':past?'bajarilmadi':''}</i><button class="x" onclick="rmDg(${x.id})" aria-label="O’chirish">✕</button></div>`}).join('')}<div class="add" style="margin-top:8px"><input id="dgn" placeholder="Har kuni takrorlanadigan maqsad" onkeydown="if(event.key=='Enter')addDg()"><button class="btn" onclick="addDg()">Qo’shish</button></div>${S.dg.length?'':'<p class="mut">Masalan: 1 sahifa Qur’on, Mutolaa, Zikr.</p>'}</div>`}
+function qRead(p,n){const o=S.qz[p]=S.qz[p]||{t:0,d:0};if((n>0&&o.d>=o.t)||(n<0&&o.d<=0))return;o.d+=n;S.qzl[wsel]=Math.max(0,(S.qzl[wsel]||0)+n);save();go()}
+function qSet(p,v){const o=S.qz[p]=S.qz[p]||{t:0,d:0};o.t=Math.max(o.d,Math.floor(num(v)));save();go()}
+function qzCard(){let tl=0,dn=0;QZ.forEach(p=>{const o=qg(p);tl+=o.t;dn+=o.d});
+ return `<div class="card"><b>Qazo namozlar</b> <span class="mut">qoldi ${tl-dn} · bugun ${S.qzl[wsel]||0} ta o’qildi</span>${QZ.map(p=>{const o=qg(p);return qe?`<div class="prow"><div style="flex:1">${p}</div><input type="number" min="0" value="${o.t}" style="width:90px;margin:0" onchange="qSet('${p}',this.value)"></div>`:`<div class="prow"><div style="flex:1"><div>${p} <i>${o.d}/${o.t}</i></div><div class="bar" style="margin:4px 0 0"><div style="width:${o.t?o.d/o.t*100:0}%"></div></div></div><button class="btn g" style="padding:6px 10px;font-size:14px" onclick="qRead('${p}',1)">o’qildi</button><button class="x" onclick="qRead('${p}',-1)" aria-label="Bekor qilish">↩</button></div>`}).join('')}<button class="btn g" style="margin-top:8px" onclick="qe=!qe;go()">${qe?'Tayyor':'Qazo sonini kiritish'}</button>${tl?'':'<p class="mut">Avval har bir namoz bo’yicha qazo sonini kiriting.</p>'}</div>`}
+function qTog(p){if(qm=='r'){if(S.qr[p])delete S.qr[p];else S.qr[p]=1}else{const v=((S.qh[p]||0)+1)%3;if(v)S.qh[p]=v;else delete S.qh[p]}save();go()}
+function qAll(n){const a=[];for(let i=js(n);i<=je(n);i++)a.push(i);if(qm=='r'){const f=a.every(i=>S.qr[i]);a.forEach(i=>f?delete S.qr[i]:S.qr[i]=1)}else{const f=a.every(i=>S.qh[i]==2);a.forEach(i=>f?delete S.qh[i]:S.qh[i]=2)}save();go()}
+function vQuran(){
+ const R=Object.keys(S.qr).length,H=Object.values(S.qh).filter(v=>v==2).length,P=Object.values(S.qh).filter(v=>v==1).length;
+ let jr=0,jh=0;const L=[];
+ for(let n=1;n<=30;n++){let r=0,h=0,p=0;for(let i=js(n);i<=je(n);i++){if(S.qr[i])r++;if(S.qh[i]==2)h++;if(S.qh[i]==1)p++}const t=je(n)-js(n)+1;if(r==t)jr++;if(h==t)jh++;L.push({n,t,r,h,p})}
+ const b=(a,t)=>`<div class="bar"><div style="width:${a/t*100}%"></div></div>`;
+ return `<h2>Qur’on</h2>
+ <div class="card"><b>O’qish</b><div class="mut">${R}/604 bet o’qildi · ${604-R} bet qoldi · ${jr}/30 juz to’liq</div>${b(R,604)}</div>
+ <div class="card"><b>Yod olish</b><div class="mut">${H}/604 bet yod olingan · ${P} bet yod olinishi kerak · ${jh}/30 juz to’liq</div>${b(H,604)}</div>
+ <div class="seg"><button class="${qm=='r'?'on':''}" onclick="qm='r';go()">O’qish belgisi</button><button class="${qm=='h'?'on':''}" onclick="qm='h';go()">Yod olish belgisi</button></div>
+ <div class="mut">${qm=='r'?'Juzni oching va betni bossangiz, o’qilgan deb belgilanadi.':'Bet bosilganda: yod olinishi kerak (uzuq chiziq) → yod olingan (to’la rang) → bekor.'}</div>
+ ${L.map(j=>{const a=qm=='r'?j.r:j.h,o=qj==j.n;
+  const pg=o?`<div class="pg">${Array.from({length:j.t},(_,i)=>{const p=js(j.n)+i,c=qm=='r'?(S.qr[p]?'r':''):(S.qh[p]==2?'h':S.qh[p]==1?'p':'');return `<button class="pb ${c}" onclick="qTog(${p})">${p}</button>`}).join('')}</div><button class="btn g" onclick="qAll(${j.n})">${a==j.t?'Juzni bekor qilish':'Butun juzni belgilash'}</button>`:'';
+  return `<div class="card" style="padding:10px 14px"><button class="prow" style="border:0;padding:0" onclick="qj=${o?0:j.n};go()"><div style="flex:1"><b>${j.n}-juz</b> <i>${js(j.n)}–${je(j.n)} bet</i><div class="mut" style="margin:2px 0 0">${qm=='r'?`${j.r}/${j.t} o’qildi`:`${j.h}/${j.t} yod olingan${j.p?' · '+j.p+' ta kerak':''}`}${a==j.t?' · to’liq ✓':''}</div>${b(a,j.t)}</div><span>${o?'▲':'▼'}</span></button>${pg}</div>`}).join('')}`}
+/* Bulut (Firebase) */
+let DB=null,UID=null,SYNC='local',lastSh={},tmr=0,AUTH=null,PULLED=0,PUSHING=0,DIRTY=0,EMAIL='',SKIP=0,LS='',DP=null;
+const FBOK=()=>typeof FB_CONFIG!=='undefined'&&FB_CONFIG.apiKey&&!/PASTE/.test(FB_CONFIG.apiKey);
+const emptyS=()=>({diary:{},tasks:{},tx:[],goals:[],debts:[],pr:{},qr:{},qh:{},qz:{},qzl:{},dg:[],dgd:{},al:[],sh:[],bk:[],nb:[]});
+const SYMSG={ok:'☁️ Ma’lumotlar hisobingizga saqlanmoqda.',local:'Bulutga ulanmagan: ma’lumotlar faqat shu telefonda saqlanyapti.',err:'Internet yo’q yoki bulut javob bermayapti. Ma’lumotlar telefonda saqlanyapti, internet kelganda o’zi yuboriladi.'};
+const symsg=()=>SYMSG[SYNC]+(LS&&SYNC=='ok'?' Oxirgi saqlash: '+LS+'.':'');
+function setSync(s){SYNC=s;if(s=='ok'){const d=new Date();LS=pad(d.getHours())+':'+pad(d.getMinutes())+', '+ymd(d)}const el=$('#sy');if(el)el.textContent=symsg()}
+function shards(){const o={misc:JSON.stringify({goals:S.goals,debts:S.debts,qr:S.qr,qh:S.qh,qz:S.qz,dg:S.dg,al:S.al,sh:S.sh,bk:S.bk,nb:S.nb})},t={};
+ ['diary','tasks','pr','dgd','qzl'].forEach(k=>Object.keys(S[k]).forEach(d=>{const m='m'+d.slice(0,7);((t[m]=t[m]||{})[k]=t[m][k]||{})[d]=S[k][d]}));
+ S.tx.forEach(x=>{const m='m'+x.d.slice(0,7);(t[m]=t[m]||{}).tx=(t[m].tx||[]).concat([x])});
+ Object.keys(t).forEach(m=>o[m]=JSON.stringify(t[m]));return o}
+function fromSh(F){const N=emptyS();Object.values(F).forEach(j=>{const o=JSON.parse(j);for(const k in o){if(Array.isArray(o[k]))N[k]=(N[k]||[]).concat(o[k]);else N[k]=Object.assign(N[k]||{},o[k])}});return N}
+function m3(b,l,r){const o={};for(const k of new Set([...Object.keys(b),...Object.keys(l),...Object.keys(r)])){const B=b[k],L=l[k],R=r[k];o[k]=Array.isArray(B||L||R)?a3(B||[],L||[],R||[]):d3(B||{},L||{},R||{})}return o}
+function d3(b,l,r){const o={};for(const k of new Set([...Object.keys(b),...Object.keys(l),...Object.keys(r)])){const B=JSON.stringify(b[k]),L=JSON.stringify(l[k]),R=JSON.stringify(r[k]);let v;if(L===B)v=r[k];else if(R===B)v=l[k];else v=r[k]!==undefined?r[k]:l[k];if(v!==undefined)o[k]=v}return o}
+function a3(b,l,r){const kf=x=>x&&x.id!=null?'i'+x.id:JSON.stringify(x),M=a=>new Map(a.map(x=>[kf(x),x])),mb=M(b),ml=M(l),mr=M(r),o=[],J=(m,k)=>m.has(k)?JSON.stringify(m.get(k)):undefined;
+ for(const k of new Set([...mb.keys(),...ml.keys(),...mr.keys()])){const B=J(mb,k),L=J(ml,k),R=J(mr,k);let v;if(L===B)v=mr.get(k);else if(R===B)v=ml.get(k);else v=mr.has(k)?mr.get(k):ml.get(k);if(v!==undefined)o.push(v)}return o}
+const saveBase=()=>{try{localStorage.setItem('kd1b:'+UID,JSON.stringify(lastSh))}catch(x){}};
+async function pull(){const s=await DB.collection('users/'+UID+'/data').get({source:'server'});
+ const L=shards(),R={},F={};s.docs.forEach(d=>R[d.id]=String(d.data().j||'{}'));
+ for(const k of new Set([...Object.keys(L),...Object.keys(R)])){const l=L[k]||'{}',r=R[k]===undefined?null:R[k],b=lastSh[k];
+  if(r===null||r===l)F[k]=l;else if(b!==undefined&&l===b)F[k]=r;else if(b!==undefined&&r===b)F[k]=l;else F[k]=JSON.stringify(m3(JSON.parse(b||'{}'),JSON.parse(l),JSON.parse(r)));
+  if(r!==null)lastSh[k]=r}
+ const N=fromSh(F),ch=JSON.stringify(N)!==JSON.stringify(S);S=N;PULLED=1;try{localStorage.setItem('kd1',JSON.stringify(S))}catch(x){}saveBase();return ch}
+async function doPush(){if(!DB||!UID)return;if(!navigator.onLine){setSync('err');return}if(PUSHING){DIRTY=1;return}PUSHING=1;
+ try{if(await pull())go();const o=shards(),col=DB.collection('users/'+UID+'/data');
+  for(const k of new Set([...Object.keys(o),...Object.keys(lastSh)])){const v=o[k]===undefined?'{}':o[k];if(lastSh[k]===v)continue;await col.doc(k).set({j:v,ts:Date.now()});lastSh[k]=v}
+  saveBase();setSync('ok')}catch(x){setSync('err')}
+ PUSHING=0;if(DIRTY){DIRTY=0;doPush()}}
+function push(){clearTimeout(tmr);tmr=setTimeout(doPush,1500)}
+async function syncAll(){if(!DB||!UID)return;if(!PULLED){try{lastSh=JSON.parse(localStorage.getItem('kd1b:'+UID)||'{}')}catch(x){lastSh={}}}
+ await doPush()}
+async function syncNow(){if(!UID){toast('Hisobga kirilmagan');return}try{await pull();go();doPush();toast('Sinxronlandi')}catch(x){setSync('err');toast('Internet yo’q')}}
+function initCloud(){if(!FBOK()){setSync('local');return}
+ try{firebase.initializeApp(FB_CONFIG);AUTH=firebase.auth();DB=firebase.firestore();try{DB.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(x){}
+  AUTH.onAuthStateChanged(u=>{if(!u){if(UID){S=emptyS();try{localStorage.removeItem('kd1')}catch(x){}}UID=null;EMAIL='';PULLED=0;lastSh={};setSync('local');showLogin(!SKIP);go();return}
+   UID=u.uid;EMAIL=u.email||'';showLogin(false);setSync('err');syncAll()})}catch(x){setSync('err')}}
+const AERR={'auth/invalid-email':'Email noto’g’ri','auth/weak-password':'Parol kamida 6 belgi bo’lsin','auth/email-already-in-use':'Bu email ro’yxatdan o’tgan, “Kirish”ni bosing','auth/invalid-credential':'Email yoki parol noto’g’ri','auth/wrong-password':'Email yoki parol noto’g’ri','auth/user-not-found':'Email yoki parol noto’g’ri','auth/network-request-failed':'Internet yo’q. Birinchi kirish uchun internet kerak','auth/too-many-requests':'Juda ko’p urinish, biroz kuting','auth/missing-password':'Parolni kiriting'};
+async function doAuth(reg){const em=$('#le').value.trim(),pw=$('#lp').value,m=$('#lm');m.textContent='';try{if(reg)await AUTH.createUserWithEmailAndPassword(em,pw);else await AUTH.signInWithEmailAndPassword(em,pw)}catch(x){m.textContent=AERR[x.code]||('Xatolik: '+(x.code||x.message))}}
+async function resetPw(){const em=$('#le').value.trim(),m=$('#lm');if(!em){m.textContent='Avval emailni yozing';return}try{await AUTH.sendPasswordResetEmail(em);m.textContent='Parolni tiklash xati yuborildi'}catch(x){m.textContent=AERR[x.code]||'Xatolik'}}
+function showLogin(v){const el=$('#login');if(el)el.hidden=!v}
+function skipLogin(){SKIP=1;showLogin(false)}
+function openLogin(){SKIP=0;showLogin(true)}
+function doOut(){const o=shards(),un=!PULLED||Object.keys(o).some(k=>lastSh[k]!==o[k]);if(un&&!confirm('Hali bulutga yuborilmagan ma’lumotlar bor. Chiqsangiz, ular yo’qoladi. Davom etasizmi?'))return;AUTH.signOut()}
+/* Ulashish va o’rnatish */
+const APPURL=()=>location.origin+location.pathname.replace(/index\.html$/,'');
+const SHTXT='MD Kundalik: namoz, reja, kundalik, hamyon va Qur’on kuzatuvi bitta ilovada. Havolani ochib, bosh ekranga qo’shing:';
+async function shareApp(){if(navigator.share){try{await navigator.share({title:'MD Kundalik',text:SHTXT,url:APPURL()})}catch(x){}}else cpLink()}
+function cpLink(){const u=APPURL();try{navigator.clipboard.writeText(u);toast('Havola nusxalandi')}catch(x){prompt('Havola:',u)}}
+addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();DP=ev;if(tab=='acc')go()});
+async function inst(){if(!DP)return;DP.prompt();try{await DP.userChoice}catch(x){}DP=null;go()}
+const IOS=/iphone|ipad|ipod/i.test(navigator.userAgent),STAND=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
+function dlBk(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='md-kundalik-zaxira-'+today+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+function rdBk(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);S=Object.assign(emptyS(),o);save();go();toast('Tiklandi')}catch(x){toast('Fayl noto’g’ri')}};r.readAsText(f)}
+/* MD: hisob, mavzu, budilnik, bozorlik, kitoblar */
+let TH='auto';try{TH=localStorage.getItem('kdth')||'auto'}catch(x){}
+function applyTh(){const r=document.documentElement;if(TH=='auto')r.removeAttribute('data-theme');else r.dataset.theme=TH}
+function setTh(v){TH=v;try{localStorage.setItem('kdth',v)}catch(x){}applyTh();go()}
+applyTh();
+function vAcc(){const u=APPURL(),en=encodeURIComponent,lk='class="btn g" style="display:block;text-align:center;text-decoration:none" target="_blank" rel="noopener"';
+ return `<h2>Hisob</h2><div class="card"><div style="display:flex;align-items:center;gap:12px"><span class="md big">MD</span><div style="flex:1;min-width:0"><b>MD Kundalik</b><div class="mut" style="margin:0;overflow-wrap:anywhere">${UID?e(EMAIL):'Hisobga kirilmagan'}</div></div></div>${FBOK()?`<button class="btn${UID?' g':''}" style="margin-top:10px;width:100%" onclick="${UID?'doOut()':'openLogin()'}">${UID?'Hisobdan chiqish':'Hisobga kirish / ro’yxatdan o’tish'}</button>`:'<p class="mut">Bulut hali sozlanmagan.</p>'}</div>
+ <h3>Fon rejimi</h3><div class="seg">${[['auto','Avto'],['light','Kunduzgi'],['dark','Tungi']].map(([k,l])=>`<button class="${TH==k?'on':''}" onclick="setTh('${k}')">${l}</button>`).join('')}</div>
+ <h3>Do’stlarga ulashish</h3><div class="card"><div class="mut" style="margin-top:0;overflow-wrap:anywhere">${e(u)}</div><div class="two" style="margin-top:8px"><button class="btn" onclick="shareApp()">Ulashish</button><button class="btn g" onclick="cpLink()">Nusxalash</button></div><div class="two" style="margin-top:8px"><a ${lk} href="https://t.me/share/url?url=${en(u)}&text=${en(SHTXT)}">Telegram</a><a ${lk} href="https://wa.me/?text=${en(SHTXT+' '+u)}">WhatsApp</a></div><p class="mut">Instagram uchun “Ulashish” tugmasini bosing yoki havolani nusxalab yuboring. Do’stingiz o’z emaili bilan ro’yxatdan o’tadi, ma’lumotlaringiz aralashmaydi.</p></div>
+ <h3>Telefonga o’rnatish</h3><div class="card">${STAND?'Ilova o’rnatilgan ✓':DP?'<button class="btn" style="width:100%" onclick="inst()">Telefonga o’rnatish</button>':IOS?'iPhone: havolani Safari’da oching → Share → Add to Home Screen.':'Android: Chrome menyusi ⋮ → Install app yoki Add to Home screen.'}</div>${vBk()}`}
+/* Bozorlik */
+function addSh(){const n=$('#sn').value.trim();if(!n)return;S.sh.push({id:Date.now(),n,q:num($('#sq').value)||1,p:num($('#sp').value),d:0});save();go()}
+function tSh(id){const x=S.sh.find(y=>y.id==id);x.d=x.d?0:1;save();go()}
+function rmSh(id){S.sh=S.sh.filter(y=>y.id!=id);save();go()}
+function shBuy(){const b=S.sh.filter(x=>x.d),t=b.reduce((a,x)=>a+x.q*x.p,0);if(!b.length)return;if(t>0)S.tx.push({id:Date.now(),t:'out',a:t,c:'Oziq-ovqat',n:'Bozorlik',d:today});S.sh=S.sh.filter(x=>!x.d);save();go();toast('Xarajatga yozildi')}
+function vShop(){const L=S.sh,tot=L.reduce((a,x)=>a+x.q*x.p,0),dn=L.filter(x=>x.d).reduce((a,x)=>a+x.q*x.p,0);
+ return `<h2>Bozorlik ro’yxati</h2><div class="card"><input id="sn" placeholder="Nima olish kerak? (masalan, Guruch)"><div class="two"><input id="sq" inputmode="decimal" placeholder="Miqdori"><input id="sp" inputmode="decimal" placeholder="Narxi (1 birlik)"></div><button class="btn" style="margin-top:8px" onclick="addSh()">Qo’shish</button></div><div class="card"><div class="mut" style="margin-top:0">Jami: <b>${money(tot)}</b> · Olingan: <b class="in">${money(dn)}</b> · Qolgan: <b class="out">${money(tot-dn)}</b></div>${L.map(x=>`<div class="prow"><button class="ck ${x.d?'ok':''}" onclick="tSh(${x.id})" aria-label="Belgilash">${x.d?'✓':''}</button><div class="${x.d?'dn':''}" style="flex:1">${e(x.n)} <i>${x.q} × ${money(x.p)}</i></div><b>${money(x.q*x.p)}</b><button class="x" onclick="rmSh(${x.id})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Ro’yxat bo’sh. Bozorga chiqishdan oldin kerakli narsalarni shu yerga yozib qo’ying.</p>'}${L.some(x=>x.d)?'<button class="btn g" style="margin-top:8px" onclick="shBuy()">Olinganlarni xarajatga yozish</button>':''}</div>`}
+/* Kitoblar */
+function qseg(){return `<div class="seg"><button class="${qb=='q'?'on':''}" onclick="qb='q';go()">Qur’on</button><button class="${qb=='b'?'on':''}" onclick="qb='b';go()">Badiiy mutolaa</button></div>`}
+function addBk(){const n=$('#bn').value.trim();if(!n)return;S.bk.push({id:Date.now(),n,tot:num($('#bt').value),st:$('#bs').value||today,en:'',lg:[]});save();go()}
+function rmBk(id){S.bk=S.bk.filter(b=>b.id!=id);bo=0;save();go()}
+function finBk(id){const b=S.bk.find(x=>x.id==id);b.en=b.en?'':today;save();go()}
+function addLg(id){const b=S.bk.find(x=>x.id==id),f=num($('#lf').value),t=num($('#lt').value);if(t<=0){toast('Bet oralig’ini kiriting');return}b.lg.push({d:$('#ld').value||today,f:f||t,t,m1:$('#m1').value.trim(),m2:$('#m2').value.trim()});save();go()}
+function rmLg(id,i){S.bk.find(x=>x.id==id).lg.splice(i,1);save();go()}
+function addNb(){const v=$('#nb').value.trim();if(!v)return;S.nb.push({id:Date.now(),x:v});save();go()}
+function rmNb(id){S.nb=S.nb.filter(x=>x.id!=id);save();go()}
+function stNb(id){const x=S.nb.find(y=>y.id==id);S.nb=S.nb.filter(y=>y.id!=id);S.bk.push({id:Date.now(),n:x.x,tot:0,st:today,en:'',lg:[]});save();go()}
+function vBooks(){
+ const rd=b=>b.lg.reduce((a,l)=>a+Math.max(0,l.t-l.f+1),0),cur=b=>b.lg.reduce((a,l)=>Math.max(a,l.t),0);
+ const card=b=>{const o=bo==b.id,c=cur(b),p=b.tot?Math.min(100,c/b.tot*100):0,lg=b.lg.map((l,i)=>[l,i]).reverse();
+  return `<div class="card"><button class="prow" style="border:0;padding:0" onclick="bo=${o?0:b.id};go()"><div style="flex:1"><b>${e(b.n)}</b><div class="mut" style="margin:2px 0 0">${b.en?'Tugatildi: '+b.en:'O’qilmoqda'} · boshlangan: ${b.st}</div><div class="mut" style="margin:2px 0 0">${c?c+'-betgacha':'Hali boshlanmagan'}${b.tot?' / '+b.tot+' bet':''} · jami ${rd(b)} bet o’qilgan</div>${b.tot?`<div class="bar"><div style="width:${p}%"></div></div>`:''}</div><span>${o?'▲':'▼'}</span></button>${o?`<div style="margin-top:10px"><input type="date" id="ld" value="${today}"><div class="two"><input id="lf" inputmode="numeric" placeholder="Bet: dan"><input id="lt" inputmode="numeric" placeholder="Bet: gacha"></div><input id="m1" placeholder="Qaysi mavzudan" style="margin-top:8px"><input id="m2" placeholder="Qaysi mavzugacha"><button class="btn" onclick="addLg(${b.id})">Bugungi o’qishni yozish</button>${lg.map(([l,i])=>`<div class="row"><div class="t"><b>${l.d}</b> · ${l.f}–${l.t}-bet${l.m1||l.m2?`<div class="mut" style="margin:0">${e(l.m1)}${l.m2?' → '+e(l.m2):''}</div>`:''}</div><button class="x" onclick="rmLg(${b.id},${i})" aria-label="O’chirish">✕</button></div>`).join('')}<div class="two" style="margin-top:10px"><button class="btn g" onclick="finBk(${b.id})">${b.en?'Qayta ochish':'Kitobni tugatdim'}</button><button class="btn g" onclick="rmBk(${b.id})">O’chirish</button></div></div>`:''}</div>`};
+ const now=S.bk.filter(b=>!b.en),dn=S.bk.filter(b=>b.en);
+ return `<h2>Badiiy mutolaa</h2><div class="card"><input id="bn" placeholder="Kitob nomi (masalan, Mukoshafatul qulub)"><div class="two"><input id="bt" inputmode="numeric" placeholder="Jami bet (ixtiyoriy)"><input type="date" id="bs" value="${today}"></div><button class="btn" style="margin-top:8px" onclick="addBk()">Kitob qo’shish</button></div><h3>Hozir o’qilayotgan</h3>${now.map(card).join('')||'<p class="mut">Hozircha kitob yo’q.</p>'}<h3>Keyingi o’qiladigan kitoblar</h3><div class="card"><div class="add"><input id="nb" placeholder="Kitob nomi" onkeydown="if(event.key=='Enter')addNb()"><button class="btn" onclick="addNb()">Qo’shish</button></div>${S.nb.map(x=>`<div class="row"><div class="t">${e(x.x)}</div><button class="btn g" style="padding:6px 10px;font-size:14px" onclick="stNb(${x.id})">Boshlash</button><button class="x" onclick="rmNb(${x.id})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Rejadagi kitoblar yo’q.</p>'}</div>${dn.length?`<h3>Tugatilgan kitoblar</h3>${dn.map(card).join('')}`:''}`}
+/* Budilnik */
+let AU=null,WL=null,BT=0,RA=null,ARM=0;
+function beep(){try{const o=AU.createOscillator(),g=AU.createGain();o.type='square';o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(AU.destination);o.start();o.stop(AU.currentTime+.3)}catch(x){}}
+async function armAl(){try{AU=AU||new(window.AudioContext||window.webkitAudioContext)();await AU.resume();beep()}catch(x){}try{WL=await navigator.wakeLock.request('screen')}catch(x){}try{Notification.requestPermission()}catch(x){}ARM=1;go();toast('Budilnik rejimi yoqildi')}
+document.addEventListener('visibilitychange',async()=>{if(ARM&&document.visibilityState=='visible'){try{WL=await navigator.wakeLock.request('screen')}catch(x){}}});
+function ring(a){RA=a;$('#rt').textContent=a.t+' · '+a.l;$('#ring').hidden=false;clearInterval(BT);BT=setInterval(()=>{beep();if(navigator.vibrate)navigator.vibrate(300)},700);try{if(Notification.permission=='granted')new Notification('⏰ '+a.l,{body:a.t})}catch(x){}}
+function stopRing(sn){clearInterval(BT);$('#ring').hidden=true;if(sn&&RA){const d=new Date(Date.now()+3e5);S.al.push({id:Date.now(),t:pad(d.getHours())+':'+pad(d.getMinutes()),l:RA.l,on:1,rep:0,last:''});save();go()}RA=null}
+setInterval(()=>{const d=new Date(),k=ymd(d),m=d.getHours()*60+d.getMinutes();(S.al||[]).forEach(a=>{const [h,mi]=a.t.split(':').map(Number),am=h*60+mi;if(a.on&&a.last!=k&&m>=am&&m-am<=2&&!RA){a.last=k;if(!a.rep)a.on=0;save();ring(a);go()}})},1000);
+function addAl(){const t=$('#at').value;if(!t)return;S.al.push({id:Date.now(),t,l:$('#alb').value.trim()||'Budilnik',on:1,rep:+$('#ar').value,last:''});save();go()}
+function tgAl(id){const a=S.al.find(x=>x.id==id);a.on=a.on?0:1;a.last='';save();go()}
+function rmAl(id){S.al=S.al.filter(x=>x.id!=id);save();go()}
+function vAlarm(){const L=[...S.al].sort((a,b)=>a.t.localeCompare(b.t));
+ return `<h2>Budilnik</h2><div class="card"><b>${ARM?'Budilnik rejimi yoniq ✓':'Budilnik rejimi o’chiq'}</b><p class="mut">Budilnik <b>ilova ochiq va ekran yoniq</b> turganda chaladi. Tunda ishlatish uchun telefonni zaryadkaga ulab, ilovani ochiq qoldiring. Ilova yopilsa yoki telefon qulflansa, chalmasligi mumkin. Muhim uyg’onish uchun telefon budilnigini zaxira sifatida ham qo’ying.</p><button class="btn${ARM?' g':''}" onclick="armAl()">${ARM?'Qayta yoqish':'Budilnik rejimini yoqish'}</button></div><div class="card"><div class="two"><input type="time" id="at" value="04:00"><input id="alb" placeholder="Nomi (Tahajjud)"></div><div class="two" style="margin-top:8px"><select id="ar"><option value="0">Bir marta</option><option value="1">Har kuni</option></select><button class="btn" onclick="addAl()">Qo’shish</button></div></div>${L.map(a=>`<div class="card"><div class="row" style="border:0;padding:0"><div class="t"><b style="font-size:28px">${a.t}</b><div class="mut" style="margin:0">${e(a.l)} · ${a.rep?'har kuni':'bir marta'}</div></div><button class="btn${a.on?'':' g'}" style="padding:6px 12px" onclick="tgAl(${a.id})">${a.on?'Yoniq':'O’chiq'}</button><button class="x" onclick="rmAl(${a.id})" aria-label="O’chirish">✕</button></div></div>`).join('')||'<p class="mut">Budilnik yo’q.</p>'}`}
+/* Stats */
+function vStats(){
+ const m=today.slice(0,7),n=+today.slice(8),days=[...Array(n)].map((_,i)=>m+'-'+pad(i+1)),full=k=>PR.every(p=>(S.pr[k]||{})[p]);
+ let st=0;for(let i=0;;i++){const d=new Date();d.setDate(d.getDate()-i);if(full(ymd(d)))st++;else if(i)break}
+ const tt=days.reduce((a,k)=>a+(S.tasks[k]||[]).length,0),tdn=days.reduce((a,k)=>a+(S.tasks[k]||[]).filter(t=>t.d).length,0),pc=(a,b)=>b?Math.round(a/b*100):0;
+ const w=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return [DS[(d.getDay()+6)%7],score(ymd(d))]});
+ const ex={};S.tx.filter(x=>x.t=='out'&&x.d.startsWith(m)).forEach(x=>ex[x.c]=(ex[x.c]||0)+x.a);
+ const ea=Object.entries(ex).sort((a,b)=>b[1]-a[1]),et=ea.reduce((a,x)=>a+x[1],0),inc=S.tx.filter(x=>x.t=='in'&&x.d.startsWith(m)).reduce((a,x)=>a+x.a,0);
+ const row=(l,r,p)=>`<div class="mut" style="margin:10px 0 0">${l}: <b>${r}</b></div><div class="bar"><div style="width:${p}%"></div></div>`;
+ return `<h2>Statistika</h2><div class="card"><div class="mut" style="margin-top:0">Ketma-ket kunlar (6 vaqt namoz to’liq)</div><p class="bal">${st} kun</p></div>
+ <div class="card"><b>Oxirgi 7 kun</b><div class="mut">Namoz va ishlar bajarilishi</div><div class="bars">${w.map(([a,s])=>`<div><div class="bc"><div style="height:${Math.round(s*100)}%"></div></div>${a}</div>`).join('')}</div></div>
+ <div class="card"><b>Namozlar, shu oy</b>${PR.map(p=>{const c=days.filter(k=>(S.pr[k]||{})[p]).length;return row(p,c+'/'+n+' kun',pc(c,n))}).join('')}</div>
+ <div class="card"><b>Kundalik ishlar, shu oy</b>${row('Bajarildi',tdn+'/'+tt,pc(tdn,tt))}</div>
+ <div class="card"><b>Kunlik maqsadlar, shu oy</b>${S.dg.map(x=>{const c=days.filter(k=>(S.dgd[k]||{})[x.id]).length;return row(x.x,c+'/'+n+' kun',pc(c,n))}).join('')||'<p class="mut">Maqsad kiritilmagan.</p>'}</div>
+ <div class="card"><b>Qazo va Qur’on</b><div class="mut">Shu oy qazo o’qilgan: <b>${days.reduce((a,k)=>a+(S.qzl[k]||0),0)} ta</b></div><div class="mut">Qur’on: ${Object.keys(S.qr).length}/604 bet o’qilgan, ${Object.values(S.qh).filter(v=>v==2).length}/604 yod olingan</div></div>
+ <div class="card"><b>Hamyon, shu oy</b><div class="mut">Daromad: <b class="in">${money(inc)}</b> · Xarajat: <b class="out">${money(et)}</b></div>${ea.map(([c,a])=>row(c,money(a),pc(a,et))).join('')||'<p class="mut">Xarajat yozuvi yo’q.</p>'}</div>`}
+/* Kundalik */
+function vDiary(){
+ const d=S.diary[ddate]||{t:'',m:''};
+ const ql=q.toLowerCase();const ks=Object.keys(S.diary).filter(k=>k!=ddate&&(S.diary[k].t||S.diary[k].m)&&(!ql||(k+S.diary[k].t).toLowerCase().includes(ql))).sort().reverse();
+ return `<h2>Kundalik</h2>${cal()}<div class="card" id="ed"><input type="date" id="dd" value="${ddate}" onchange="ddate=this.value||today;cm=ddate.slice(0,7);go()">
+ <div class="moods">${['😄','🙂','😐','😔','😡'].map(m=>`<button class="mood${d.m==m?' on':''}" onclick="setMood('${m}')">${m}</button>`).join('')}</div>
+ <textarea id="dt" placeholder="Bugun nima bo’ldi? Nima haqida o’ylayapsiz?">${e(d.t)}</textarea>
+ <button class="btn" onclick="saveD()">Saqlash</button></div>
+ <h3>Oldingi yozuvlar</h3><input type="search" placeholder="Yozuvlardan qidirish" value="${e(q)}" onchange="q=this.value.trim();go()">${ks.length?ks.map(k=>`<button class="ent" onclick="ddate='${k}';go();scrollTo(0,0)"><b>${k}</b> ${S.diary[k].m||''}<div class="mut">${e(S.diary[k].t.slice(0,90))}</div></button>`).join(''):'<p class="mut">Boshqa yozuv yo’q. Yuqorida bugungi kunni yozing va saqlang.</p>'}`;
+}
+function cal(){
+ const [y,mo]=cm.split('-').map(Number),n=new Date(y,mo,0).getDate(),off=(new Date(y,mo-1,1).getDay()+6)%7;
+ 
+ const cnt={};let cells=DS.map(d=>`<div class="ch">${d}</div>`).join('')+'<i></i>'.repeat(off);
+ for(let i=1;i<=n;i++){const k=cm+'-'+pad(i),d=S.diary[k]||{},m=d.m;if(m)cnt[m]=(cnt[m]||0)+1;
+  cells+=`<button class="cd${k==ddate?' on':''}${k==today?' td':''}" onclick="ddate='${k}';go();$('#ed').scrollIntoView({behavior:'smooth'})"><span>${m||(d.t?'•':'+')}</span>${i}</button>`}
+ const st=Object.keys(cnt).map(m=>`<span class="chip">${m} ${cnt[m]}×</span>`).join('')||'<span class="mut">Bu oyda kayfiyat belgilanmagan.</span>';
+ return `<div class="card"><div class="nav"><button onclick="cmv(-1)" aria-label="Oldingi oy">‹</button><b>${MN[mo-1]} ${y}</b><button onclick="cmv(1)" aria-label="Keyingi oy">›</button></div><div class="cal">${cells}</div><div class="mut">Shu oydagi kayfiyatlar:</div><div>${st}</div></div>`}
+function cmv(n){const [y,m]=cm.split('-').map(Number),d=new Date(y,m-1+n,1);cm=d.getFullYear()+'-'+pad(d.getMonth()+1);go()}
+function setMood(m){const o=S.diary[ddate]||{t:'',m:''};S.diary[ddate]={t:$('#dt').value,m:o.m==m?'':m};save();go()}
+function saveD(){const o=S.diary[ddate]||{m:''};const t=$('#dt').value;if(!t.trim()&&!o.m)delete S.diary[ddate];else S.diary[ddate]={t,m:o.m||''};save();toast('Saqlandi');go()}
+/* Reja */
+function vPlan(){
+ const days=[...Array(7)].map((_,i)=>{const d=new Date(wstart);d.setDate(d.getDate()+i);return d});
+ const list=S.tasks[wsel]||[],dn=list.filter(t=>t.d).length;
+ const sd=new Date(wsel+'T00:00:00');
+ return `<h2>Haftalik reja</h2><input type="search" placeholder="Vazifalarni qidirish" value="${e(tq)}" onchange="tq=this.value.trim();go()">${tq?tres():''}<div class="nav"><button onclick="wk(-7)" aria-label="Oldingi hafta">‹</button><b>${days[0].getDate()} ${MON[days[0].getMonth()]} – ${days[6].getDate()} ${MON[days[6].getMonth()]}</b><button onclick="wk(7)" aria-label="Keyingi hafta">›</button></div>
+ <div class="week">${days.map((d,i)=>{const k=ymd(d),o=(S.tasks[k]||[]).filter(t=>!t.d).length;return `<button class="day${k==wsel?' on':''}${k==today?' td':''}" onclick="wsel='${k}';go()">${DS[i]}<b>${d.getDate()}</b><i>${o||''}</i></button>`}).join('')}</div>
+ <div class="card"><div class="mut" style="margin-top:0">${sd.getDate()} ${MON[sd.getMonth()]} uchun vazifalar</div>
+ <div class="add"><input id="nt" placeholder="Yangi vazifa" onkeydown="if(event.key=='Enter')addT()"><button class="btn" onclick="addT()">Qo’shish</button></div>
+ ${list.map((t,i)=>`<div class="task"><input type="checkbox" ${t.d?'checked':''} onchange="tg(${i})"><span class="${t.d?'dn':''}">${e(t.x)}</span><button class="x" onclick="rmT(${i})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Bu kunga vazifa yo’q.</p>'}
+ ${list.length?`<p class="mut">${dn}/${list.length} bajarildi</p><button class="btn g" onclick="mvT()">Bajarilmaganlarni ertaga ko’chirish</button>`:''}</div>`;
+}
+function mvT(){const d=new Date(wsel+'T00:00:00');d.setDate(d.getDate()+1);const k=ymd(d),l=S.tasks[wsel]||[],u=l.filter(t=>!t.d);if(!u.length){toast('Ko’chiriladigan vazifa yo’q');return}S.tasks[wsel]=l.filter(t=>t.d);(S.tasks[k]=S.tasks[k]||[]).push(...u);save();go();toast(u.length+' ta vazifa ertaga ko’chirildi')}
+function tres(){const ql=tq.toLowerCase(),r=[];Object.keys(S.tasks).sort().reverse().forEach(k=>S.tasks[k].forEach(t=>{if(t.x.toLowerCase().includes(ql))r.push([k,t])}));return `<div class="card">${r.slice(0,30).map(([k,t])=>`<button class="ent" onclick="wsel='${k}';wstart=mondayOf(k);tq='';go()"><b>${k}</b> <span class="${t.d?'dn':''}">${e(t.x)}</span></button>`).join('')||'<p class="mut">Hech narsa topilmadi.</p>'}</div>`}
+function wk(n){wstart.setDate(wstart.getDate()+n);wsel=ymd(wstart);go()}
+function addT(){const v=$('#nt').value.trim();if(!v)return;(S.tasks[wsel]=S.tasks[wsel]||[]).push({x:v,d:0});save();go();$('#nt').focus()}
+function tg(i){S.tasks[wsel][i].d=S.tasks[wsel][i].d?0:1;save();go()}
+function rmT(i){S.tasks[wsel].splice(i,1);save();go()}
+/* Hamyon */
+function vWal(){
+ const m=today.slice(0,7),sum=(t,f)=>S.tx.filter(x=>x.t==t&&f(x)).reduce((a,x)=>a+x.a,0);
+ const bal=sum('in',()=>1)-sum('out',()=>1),mi=sum('in',x=>x.d.startsWith(m)),mo=sum('out',x=>x.d.startsWith(m));
+ const L=[...S.tx].sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id).slice(0,40);
+ return `<h2>Hamyon</h2><div class="card"><div class="mut" style="margin-top:0">Umumiy balans</div><p class="bal ${bal<0?'out':''}">${money(bal)}</p>
+ <div class="mut">Shu oy: <b class="in">+${money(mi)}</b> · <b class="out">−${money(mo)}</b></div></div>
+ <div class="card"><div class="seg"><button class="${txType=='out'?'on':''}" onclick="txType='out';go()">Xarajat</button><button class="${txType=='in'?'on':''}" onclick="txType='in';go()">Daromad</button></div>
+ <input id="ta" inputmode="decimal" placeholder="Summa (so’m)"><div class="two"><select id="tc">${CAT[txType].map(c=>`<option>${c}</option>`).join('')}</select><input type="date" id="td" value="${today}"></div>
+ <input id="tn" placeholder="Izoh (ixtiyoriy)" style="margin-top:8px"><button class="btn" onclick="addTx()">Qo’shish</button></div>
+ <h3>So’nggi yozuvlar</h3>${L.map(x=>`<div class="row"><div class="t"><b>${e(x.c)}</b> <span class="mut">${x.d}${x.n?' · '+e(x.n):''}</span></div><b class="${x.t}">${x.t=='in'?'+':'−'}${money(x.a)}</b><button class="x" onclick="rmTx(${x.id})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Hali yozuv yo’q. Birinchi daromad yoki xarajatni qo’shing.</p>'}`;
+}
+function addTx(){const a=num($('#ta').value);if(a<=0){toast('Summani kiriting');return}S.tx.push({id:Date.now(),t:txType,a,c:$('#tc').value,n:$('#tn').value.trim(),d:$('#td').value||today});save();go();toast('Qo’shildi')}
+function rmTx(id){S.tx=S.tx.filter(x=>x.id!=id);save();go()}
+/* Maqsad va qarz */
+function vGoal(){
+ let h=`<h2>Maqsad va qarz</h2><div class="seg"><button class="${gmode=='goal'?'on':''}" onclick="gmode='goal';go()">Maqsadlar</button><button class="${gmode=='debt'?'on':''}" onclick="gmode='debt';go()">Qarzlar</button></div>`;
+ if(gmode=='goal'){
+  h+=`<div class="card"><input id="gn" placeholder="Maqsad nomi (masalan, Noutbuk)"><input id="gt" inputmode="decimal" placeholder="Kerakli summa"><button class="btn" onclick="addG()">Maqsad qo’shish</button></div>`;
+  h+=S.goals.map((g,i)=>{const p=Math.min(100,g.t?g.s/g.t*100:0);return `<div class="card"><div class="row" style="border:0;padding:0"><b class="t">${e(g.n)}</b><button class="x" onclick="rmG(${i})" aria-label="O’chirish">✕</button></div><div class="bar"><div style="width:${p}%"></div></div><div class="mut">${money(g.s)} / ${money(g.t)} (${Math.round(p)}%)</div><div class="add"><input id="g${i}" inputmode="decimal" placeholder="Summa"><button class="btn g" onclick="gAdd(${i})">+ Qo’shish</button></div></div>`}).join('')||'<p class="mut">Hali maqsad yo’q. Birinchisini yuqorida yarating.</p>';
+ }else{
+  const un=S.debts.filter(d=>!d.p),gv=un.filter(d=>d.w=='gave').reduce((a,d)=>a+d.a,0),tk=un.filter(d=>d.w=='took').reduce((a,d)=>a+d.a,0);
+  h+=`<div class="card"><div class="mut" style="margin-top:0">Menga qaytishi kerak: <b class="in">${money(gv)}</b></div><div class="mut">Men qaytarishim kerak: <b class="out">${money(tk)}</b></div></div>
+  <div class="card"><select id="dw"><option value="gave">Men qarz berdim</option><option value="took">Men qarz oldim</option></select><input id="dp" placeholder="Kim bilan"><input id="da" inputmode="decimal" placeholder="Summa"><button class="btn" onclick="addD()">Qarz qo’shish</button></div>`;
+  h+=dsec('took')+dsec('gave');
+ }
+ return h}
+function vBk(){return `<h3>Bulut (hisob)</h3><div class="card"><div id="sy" class="mut" style="margin-top:0">${symsg()}</div><button class="btn g" onclick="syncNow()">Hozir sinxronlash</button></div><h3>Zaxira nusxa</h3><div class="card"><div class="mut" style="margin-top:0">Ma’lumotlar faqat shu telefonda saqlanadi. Brauzer tozalansa yo’qolishi mumkin, shuning uchun vaqti-vaqti bilan nusxa oling.</div><textarea id="bk" style="min-height:70px" placeholder="Nusxa shu yerda chiqadi yoki tiklash uchun shu yerga joylang"></textarea><div class="two"><button class="btn g" onclick="bkOut()">Nusxa olish</button><button class="btn g" onclick="bkIn()">Tiklash</button></div><div class="two" style="margin-top:8px"><button class="btn g" onclick="dlBk()">Faylga yuklab olish</button><label class="btn g" style="text-align:center;cursor:pointer">Fayldan tiklash<input type="file" accept=".json,application/json" hidden onchange="rdBk(this)"></label></div></div>`;
+}
+function dsec(w){const took=w=='took',L=S.debts.map((d,i)=>[d,i]).filter(([d])=>d.w==w),un=L.filter(([d])=>!d.p).reduce((a,[d])=>a+d.a,0),pd=L.filter(([d])=>d.p).reduce((a,[d])=>a+d.a,0);
+ return `<h3>${took?'Men olgan qarzlar':'Men bergan qarzlar'}</h3><div class="card"><div class="mut" style="margin-top:0">${took?'Qaytarishim kerak':'Menga qaytishi kerak'}: <b class="${took?'out':'in'}">${money(un)}</b></div><div class="mut">${took?'Qaytarib bo’lingan':'Qaytib kelgan'}: <b>${money(pd)}</b></div>${L.map(([d,i])=>`<div class="row"><div class="t ${d.p?'dn':''}"><b>${e(d.p0)}</b></div><b class="${took?'out':'in'} ${d.p?'dn':''}">${money(d.a)}</b><button class="x" onclick="pdD(${i})" aria-label="${took?'Qaytarildi':'Qaytdi'}">${d.p?'↩':'✓'}</button><button class="x" onclick="rmD(${i})" aria-label="O’chirish">✕</button></div>`).join('')||'<p class="mut">Yozuv yo’q.</p>'}</div>`}
+function addG(){const n=$('#gn').value.trim(),t=num($('#gt').value);if(!n||t<=0){toast('Nom va summani kiriting');return}S.goals.push({n,t,s:0});save();go()}
+function gAdd(i){const a=num($('#g'+i).value);if(a<=0)return;S.goals[i].s+=a;save();go();toast('Qo’shildi')}
+function rmG(i){S.goals.splice(i,1);save();go()}
+function addD(){const p=$('#dp').value.trim(),a=num($('#da').value);if(!p||a<=0){toast('Ism va summani kiriting');return}S.debts.push({w:$('#dw').value,p0:p,a,p:0});save();go()}
+function pdD(i){S.debts[i].p=S.debts[i].p?0:1;save();go()}
+function rmD(i){S.debts.splice(i,1);save();go()}
+function bkOut(){const t=$('#bk');t.value=JSON.stringify(S);t.select();try{navigator.clipboard.writeText(t.value);toast('Nusxa olindi')}catch(x){toast('Matnni belgilab nusxalang')}}
+function bkIn(){try{const o=JSON.parse($('#bk').value);if(typeof o!='object'||!o)throw 0;S=Object.assign({diary:{},tasks:{},tx:[],goals:[],debts:[],pr:{},qr:{},qh:{},qz:{},qzl:{},dg:[],dgd:{},al:[],sh:[],bk:[],nb:[]},o);save();go();toast('Tiklandi')}catch(x){toast('Nusxa noto’g’ri')}}
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+addEventListener('online',()=>{if(UID)syncAll()});addEventListener('offline',()=>{if(UID)setSync('err')});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState=='visible'&&UID&&!PULLED)syncAll()});
+go();initCloud();
+</script>
+</body>
+</html>
